@@ -7,12 +7,14 @@ export interface User {
 }
 
 export interface CreateUserInput {
-  name: string;
+  name?: string;
   email: string;
+  password: string;
 }
 
 export interface UpdateUserInput {
   name?: string;
   email?: string;
+  password?: string;
 }
 

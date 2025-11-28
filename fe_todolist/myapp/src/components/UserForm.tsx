@@ -11,6 +11,7 @@ interface UserFormProps {
 export const UserForm: React.FC<UserFormProps> = ({ user, onSuccess, onCancel }) => {
   const [name, setName] = useState(user?.name || '');
   const [email, setEmail] = useState(user?.email || '');
+  const [password, setPassword] = useState('');
   const createUser = useCreateUser();
   const updateUser = useUpdateUser();
 
@@ -18,22 +19,30 @@ export const UserForm: React.FC<UserFormProps> = ({ user, onSuccess, onCancel })
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim() || !email.trim()) return;
+    if (!email.trim()) return;
+    if (!isEditing && !password.trim()) return;
 
     if (isEditing) {
+      const updateData: { name?: string; email?: string; password?: string } = {};
+      if (name.trim()) updateData.name = name.trim();
+      if (email.trim()) updateData.email = email.trim();
+      if (password.trim()) updateData.password = password.trim();
+      
       await updateUser.mutateAsync({
         id: user.id,
-        input: { name: name.trim(), email: email.trim() },
+        input: updateData,
       });
     } else {
       await createUser.mutateAsync({
-        name: name.trim(),
+        name: name.trim() || undefined,
         email: email.trim(),
+        password: password.trim(),
       });
     }
 
     setName('');
     setEmail('');
+    setPassword('');
     onSuccess?.();
   };
 
@@ -74,6 +83,24 @@ export const UserForm: React.FC<UserFormProps> = ({ user, onSuccess, onCancel })
           placeholder="Nhập email user..."
           required
         />
+      </div>
+
+      <div className="mb-4">
+        <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-2">
+          Mật khẩu {isEditing ? '' : '*'}
+        </label>
+        <input
+          id="password"
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+          placeholder={isEditing ? "Để trống nếu không muốn đổi mật khẩu" : "Nhập mật khẩu..."}
+          required={!isEditing}
+        />
+        {isEditing && (
+          <p className="mt-1 text-xs text-gray-500">Để trống nếu không muốn thay đổi mật khẩu</p>
+        )}
       </div>
 
       <div className="flex gap-3">
